@@ -1,0 +1,24 @@
+{
+  "name": "server-stats",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "This is a Node.js-based API and WebSocket service that collects and sends real-time system performance data such as CPU usage, memory usage, disk space, and network activity.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/index.js"
+  },
+  "author": "Pranab Acharya",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.1.0",
+    "express": "^5.1.0",
+    "ping": "^0.4.4",
+    "socket.io": "^4.8.1",
+    "systeminformation": "^5.27.7"
+  }
+}

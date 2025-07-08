@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Real-time Server Dashboard</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen font-sans flex flex-col">
+    <div class="max-w-screen-xl mx-auto p-6 w-full flex-1">
+        <h1 class="text-3xl font-bold text-center mb-8">📊 Real-time Server Dashboard</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <div class="bg-gray-800 p-4 rounded-xl shadow-lg">
+                <h2 class="text-xl font-semibold mb-2 text-red-400">CPU Load (%)</h2>
+                <div id="cpuChart" class="h-64"></div>
+            </div>
+
+            <div class="bg-gray-800 p-4 rounded-xl shadow-lg">
+                <h2 class="text-xl font-semibold mb-2 text-blue-400">Memory Usage (MB)</h2>
+                <div id="memChart" class="h-64"></div>
+            </div>
+
+            <div class="bg-gray-800 p-4 rounded-xl shadow-lg">
+                <h2 class="text-xl font-semibold mb-2 text-purple-400">Network I/O (MB)</h2>
+                <div id="netChart" class="h-64"></div>
+            </div>
+
+            <div class="bg-gray-800 p-4 rounded-xl shadow-lg col-span-1 md:col-span-2 lg:col-span-1">
+                <h2 class="text-xl font-semibold mb-2 text-green-400">Disk Usage</h2>
+                <pre id="diskUsage" class="bg-gray-900 p-4 rounded-lg text-sm text-gray-300">Loading...</pre>
+            </div>
+
+        </div>
+    </div>
+
+    <footer class="text-center text-sm text-gray-500 py-4">
+        Developed by <span class="text-white font-medium">Pranab Acharya</span>
+    </footer>
+
+    <script>
+        const socket = io("http://localhost:6002");
+
+        const cpuChart = new ApexCharts(document.querySelector("#cpuChart"), {
+            chart: {
+                type: 'line',
+                height: 250,
+                foreColor: '#fff',
+                animations: {
+                    enabled: true,
+                    easing: 'easeinout',
+                    dynamicAnimation: { speed: 300 }
+                }
+            },
+            series: [{ name: "CPU (%)", data: [] }],
+            xaxis: { labels: { show: false }, categories: Array(20).fill("") },
+            stroke: { curve: 'smooth', width: 2 },
+            colors: ['#f87171'],
+            tooltip: { theme: 'dark' }
+        });
+        cpuChart.render();
+
+        const memChart = new ApexCharts(document.querySelector("#memChart"), {
+            chart: {
+                type: 'line',
+                height: 250,
+                foreColor: '#fff',
+                toolbar: { show: false },
+                animations: {
+                    enabled: true,
+                    easing: 'easeinout',
+                    dynamicAnimation: { speed: 300 }
+                }
+            },
+            series: [
+                { name: "Used", data: [] },
+                { name: "Free", data: [] }
+            ],
+            xaxis: {
+                labels: { show: false },
+                categories: Array(20).fill("")
+            },
+            yaxis: {
+                decimalsInFloat: 0,
+                labels: {
+                    formatter: val => `${Math.round(val)} MB`,
+                    style: { colors: "#ccc" }
+                }
+            },
+            stroke: { curve: 'smooth', width: 2 },
+            colors: ['#3b82f6', '#10b981'],
+            tooltip: { theme: 'dark' },
+            legend: {
+                labels: { colors: "#ccc" },
+                position: 'top',
+                horizontalAlign: 'left'
+            }
+        });
+        memChart.render();
+
+
+        const netChart = new ApexCharts(document.querySelector("#netChart"), {
+            chart: {
+                type: 'line',
+                height: 250,
+                foreColor: '#fff',
+                toolbar: { show: false },
+                animations: {
+                    enabled: true,
+                    easing: 'easeinout',
+                    dynamicAnimation: { speed: 300 }
+                }
+            },
+            series: [
+                { name: "Download", data: [] },
+                { name: "Upload", data: [] }
+            ],
+            xaxis: {
+                labels: { show: false },
+                categories: Array(20).fill("")
+            },
+            yaxis: {
+                decimalsInFloat: 0,
+                labels: {
+                    formatter: val => `${Math.round(val)} MB`,
+                    style: { colors: "#ccc" }
+                }
+            },
+            stroke: { curve: 'smooth', width: 2 },
+            colors: ['#8b5cf6', '#f59e0b'],
+            tooltip: { theme: 'dark' },
+            legend: {
+                labels: { colors: "#ccc" },
+                position: 'top',
+                horizontalAlign: 'left'
+            }
+        });
+        netChart.render();
+
+
+        let cpuData = [], memUsed = [], memFree = [], netRx = [], netTx = [];
+
+        socket.on("server-stats", (stats) => {
+            cpuData.push(stats.cpuLoad);
+            if (cpuData.length > 20) cpuData.shift();
+            cpuChart.updateSeries([{ data: cpuData }]);
+
+            memUsed.push(stats.memUsedMB);
+            memFree.push(stats.memTotalMB - stats.memUsedMB);
+            if (memUsed.length > 20) {
+                memUsed.shift();
+                memFree.shift();
+            }
+            memChart.updateSeries([
+                { data: memUsed },
+                { data: memFree }
+            ]);
+
+            netRx.push(stats.netRxMB);
+            netTx.push(stats.netTxMB);
+            if (netRx.length > 20) {
+                netRx.shift();
+                netTx.shift();
+            }
+            netChart.updateSeries([
+                { data: netRx },
+                { data: netTx }
+            ]);
+
+            document.getElementById("diskUsage").textContent =
+                `Used: ${(stats.diskUsed / 1024 / 1024 / 1024).toFixed(2)} GB\n` +
+                `Total: ${(stats.diskTotal / 1024 / 1024 / 1024).toFixed(2)} GB\n` +
+                `Uptime: ${(stats.uptimeSeconds / 60).toFixed(0)} min`;
+        });
+    </script>
+</body>
+
+</html>
