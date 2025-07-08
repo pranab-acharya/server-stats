@@ -78,7 +78,7 @@ http://localhost:6002
 
 ## 📊 Dashboard Preview
 
-![image](https://github.com/user-attachments/assets/818300ac-e960-493e-8017-1a5ef29a169e)
+![image](https://github.com/user-attachments/assets/aede4a19-a44e-4d0a-b352-14de9aa35c62)
 
 ---
 
