@@ -47,8 +47,8 @@ server-stats/
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/pranab-acharya/server-dashboard-ApexChart.git
-   cd server-dashboard-ApexChart
+   git clone https://github.com/pranab-acharya/server-stats.git
+   cd server-stats
    ```
 
 2. **Install dependencies:**
