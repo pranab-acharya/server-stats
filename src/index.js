@@ -18,6 +18,8 @@ app.use(cors({
     origin: "*"
 }));
 
+app.use(expres.static("public"));
+
 io.on('connection', socket => {
     console.log(`Client connected: ${socket.id}`)
 

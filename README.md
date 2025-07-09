@@ -31,12 +31,13 @@ A visually rich real-time server monitoring dashboard built with **Node.js**, **
 
 ```
 server-stats/
+├── public/
+│   └── index.html         # Dashboard 
 ├── src/
 │   ├── utils/
 │   │   └── getStats.js     # Function to collect server stats
 │   └── index.js           # Express + Socket.IO server
 ├── package.json
-├── index.html
 ├── .env
 └── README.md
 ```
